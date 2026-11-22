@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Open Battery Data: Map</title>
+<meta name="description" content="Open battery datasets for degradation, thermal runaway and fire risk, on a globe.">
+<style>
+  :root {
+    --bg: #000;
+    --text: #f5f5f7;
+    --muted: #8e8e93;
+    --line: rgba(255,255,255,.10);
+    --glass: rgba(22,22,24,.72);
+    --ev: #3e6ae1;      /* EV field   */
+    --fire: #e82127;    /* EV fire    */
+    --lab: #e5e5ea;     /* Lab cell   */
+    --ess: #ff9f0a;     /* ESS        */
+    --font: Aptos, "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  .hero { position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+
+  #globe { position: absolute; inset: 0; }
+
+  /* ---------- header ---------- */
+  header { position: absolute; z-index: 2; top: 0; left: 0; right: 0; padding: max(28px, env(safe-area-inset-top)) 32px 0; pointer-events: none; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+  header > * { pointer-events: auto; }
+  .eyebrow { font-size: 11px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  h1 { margin: 10px 0 6px; font-size: clamp(28px, 4vw, 44px); font-weight: 600; letter-spacing: -.025em; line-height: 1.05; }
+  .sub { font-size: 15px; color: var(--muted); }
+  .top-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); font-size: 13px; font-weight: 500; letter-spacing: .02em; cursor: pointer; text-decoration: none; transition: background .2s, border-color .2s; }
+  .btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.22); }
+  .btn svg { width: 15px; height: 15px; }
+
+  /* ---------- filters ---------- */
+  .filters { position: absolute; z-index: 2; left: 50%; transform: translateX(-50%); bottom: max(28px, env(safe-area-inset-bottom)); display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); max-width: calc(100vw - 24px); overflow-x: auto; scrollbar-width: none; }
+  .filters::-webkit-scrollbar { display: none; }
+  .chip { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s, color .2s; white-space: nowrap; }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .chip .n { font-variant-numeric: tabular-nums; opacity: .7; }
+  .chip:hover { color: var(--text); }
+  .chip.on { background: rgba(255,255,255,.14); color: var(--text); }
+
+  /* ---------- markers ---------- */
+  .mwrap { width: 36px; height: 36px; pointer-events: none; }
+  .mwrap.dim { opacity: .18; }
+  .mwrap.dim .marker { pointer-events: none; }
+  .marker { position: relative; width: 36px; height: 36px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: rgba(12,12,14,.82); border: 1.5px solid var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent), 0 6px 18px rgba(0,0,0,.5); transform: translate(var(--dx, 0px), 0); transition: transform .2s, box-shadow .2s; pointer-events: auto; }
+  .marker:hover, .marker.active { transform: translate(var(--dx, 0px), 0) scale(1.18); box-shadow: 0 0 0 6px color-mix(in srgb, var(--c) 30%, transparent), 0 8px 24px rgba(0,0,0,.6); }
+  .marker svg { width: 18px; height: 18px; color: var(--c); }
+  .marker .badge { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--text); color: #000; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+
+  /* ---------- panel ---------- */
+  .panel { position: fixed; top: 16px; right: 16px; bottom: 16px; width: min(420px, calc(100vw - 32px)); border-radius: 22px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(28px) saturate(170%); -webkit-backdrop-filter: blur(28px) saturate(170%); box-shadow: 0 20px 60px rgba(0,0,0,.55); transform: translateX(calc(100% + 24px)); transition: transform .38s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; z-index: 5; }
+  .panel { visibility: hidden; transition: transform .38s cubic-bezier(.2,.8,.2,1), visibility 0s linear .38s; }
+  .panel.open { transform: none; visibility: visible; transition: transform .38s cubic-bezier(.2,.8,.2,1); }
+  .panel-head { padding: 22px 22px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; }
+  .panel-head h2 { margin: 6px 0 4px; font-size: 22px; font-weight: 600; letter-spacing: -.015em; }
+  .panel-head .basis { font-size: 13px; color: var(--muted); }
+  .close { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255,255,255,.1); cursor: pointer; display: grid; place-items: center; }
+  .close:hover { background: rgba(255,255,255,.2); }
+  .panel-body { overflow-y: auto; padding: 8px 22px 22px; -webkit-overflow-scrolling: touch; }
+  .group-title { margin: 22px 0 6px; font-size: 11px; letter-spacing: .28em; text-transform: uppercase; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .group-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .card { margin-top: 14px; padding: 18px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+  .card-top { display: flex; align-items: center; gap: 10px; }
+  .card-icon { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--c); }
+  .card-icon svg { width: 15px; height: 15px; color: var(--c); }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; }
+  .card .type { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
+  .tag { font-size: 11.5px; font-weight: 600; letter-spacing: .03em; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.08); color: var(--text); }
+  .tag.access-Open { background: rgba(48,209,88,.16); color: #30d158; }
+  .tag.access-Login { background: rgba(255,214,10,.14); color: #ffd60a; }
+  .tag.access-Request, .tag.access-View { background: rgba(255,69,58,.14); color: #ff6961; }
+  dl { display: grid; grid-template-columns: 96px 1fr; gap: 9px 12px; margin: 14px 0 0; font-size: 13px; line-height: 1.45; }
+  dt { color: var(--muted); }
+  dd { margin: 0; color: #d1d1d6; }
+  .ns { color: #636366; }
+  .src { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 13px; font-weight: 600; color: #2997ff; text-decoration: none; }
+  .src:hover { text-decoration: underline; }
+
+  .unknown { position: absolute; z-index: 2; right: 24px; bottom: max(28px, env(safe-area-inset-bottom)); font-size: 12px; }
+  .hint { position: absolute; z-index: 2; left: 32px; bottom: max(36px, env(safe-area-inset-bottom)); font-size: 12px; color: #636366; letter-spacing: .02em; }
+
+
+  /* ---------- zoom + scroll cue ---------- */
+  .zoom { position: absolute; z-index: 2; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 6px; }
+  .zoom .btn { width: 38px; padding: 0; justify-content: center; font-size: 18px; }
+  .cue { position: absolute; z-index: 2; left: 50%; transform: translateX(-50%); bottom: calc(max(28px, env(safe-area-inset-bottom)) + 58px); font-size: 12px; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .cue:hover { color: var(--text); }
+  .cue span { animation: bob 2.2s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(4px); } }
+
+  /* ---------- catalogue ---------- */
+  .catalogue { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 72px 32px 96px; }
+  .catalogue > .eyebrow { margin-bottom: 10px; }
+  .catalogue h2.big { margin: 0 0 12px; font-size: clamp(28px, 3.4vw, 40px); font-weight: 600; letter-spacing: -.025em; }
+  .catalogue .lede { color: var(--muted); font-size: 16px; max-width: 760px; margin: 0 0 8px; line-height: 1.55; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 22px 0 8px; font-size: 13px; color: var(--muted); }
+  .legend b { color: var(--text); font-weight: 600; }
+  .gap { margin: 26px 0 8px; padding: 16px 20px; border-radius: 16px; background: rgba(232,33,39,.08); border: 1px solid rgba(232,33,39,.25); font-size: 14px; color: #d1d1d6; line-height: 1.5; }
+  .gap b { color: #ff6961; }
+  .cat { margin-top: 64px; }
+  .cat-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .cat-head h3 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -.015em; display: flex; align-items: center; gap: 12px; }
+  .cat-head .ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--c); }
+  .cat-head .ic svg { width: 17px; height: 17px; color: var(--c); }
+  .cat-head .count { color: var(--muted); font-size: 15px; }
+  .cat p { margin: 0 0 18px; color: var(--muted); font-size: 14.5px; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.025); -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 980px; }
+  th { text-align: left; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 14px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: top; color: #d1d1d6; line-height: 1.45; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr { cursor: pointer; transition: background .15s; }
+  tbody tr:hover { background: rgba(255,255,255,.04); }
+  td.name { color: var(--text); font-weight: 600; min-width: 200px; }
+  td.name small { display: block; color: var(--muted); font-weight: 400; margin-top: 3px; font-size: 12.5px; }
+  td.sig { min-width: 230px; }
+  td.acq { min-width: 190px; }
+  td.acq b { display: block; color: var(--text); font-weight: 600; margin-top: 3px; }
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill.access-Open { background: rgba(48,209,88,.16); color: #30d158; }
+  .pill.access-Login { background: rgba(255,214,10,.14); color: #ffd60a; }
+  .pill.access-Request, .pill.access-View { background: rgba(255,69,58,.14); color: #ff6961; }
+  .sig code { font-family: var(--font); font-size: 12px; padding: 2px 7px; margin: 0 4px 4px 0; display: inline-block; border-radius: 6px; background: rgba(255,255,255,.08); color: var(--text); }
+  footer { max-width: 1240px; margin: 0 auto; padding: 0 32px 64px; color: #636366; font-size: 13px; line-height: 1.6; }
+  footer a { color: #2997ff; text-decoration: none; }
+
+  @media (max-width: 820px) {
+    .zoom { right: 14px; }
+    .catalogue { padding: 56px 18px 72px; }
+    footer { padding: 0 18px 48px; }
+    .cue { display: none; }
+    header { padding: max(20px, env(safe-area-inset-top)) 18px 0; flex-direction: column; gap: 14px; }
+    .sub { font-size: 13px; }
+    .filters { bottom: max(16px, env(safe-area-inset-bottom)); }
+    .unknown { right: 18px; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 56px); }
+    .hint { display: none; }
+    .panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; height: 68vh; transform: translateY(calc(100% + 24px)); }
+  }
+</style>
+</head>
+<body>
+<section class="hero">
+<div id="globe" aria-label="Globe showing where each battery dataset comes from"></div>
+
+<header>
+  <div>
+    <div class="eyebrow">Open Battery Data</div>
+    <h1>Where battery data comes from.</h1>
+    <div class="sub" id="sub"></div>
+  </div>
+  <div class="top-actions">
+    <button class="btn" id="listBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      All datasets
+    </button>
+    <a class="btn" href="https://github.com/soyounson/open-battery-data" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<nav class="filters" id="filters" aria-label="Filter by data category"></nav>
+<button class="btn unknown" id="unknownBtn" type="button" hidden></button>
+<div class="hint">Drag to rotate · Tap a marker</div>
+<div class="zoom"><button class="btn" id="zin" type="button" aria-label="Zoom in">+</button><button class="btn" id="zout" type="button" aria-label="Zoom out">−</button></div>
+<a class="cue" href="#catalogue">Full table<span>↓</span></a>
+</section>
+
+<main class="catalogue" id="catalogue">
+  <div class="eyebrow">Catalogue</div>
+  <h2 class="big">Every dataset, side by side.</h2>
+  <p class="lede">What each dataset records, how it was collected and whether you can download it today. Tap a row to see it on the globe.</p>
+  <div class="legend" id="legend"></div>
+  <div class="gap"><b>Key gap.</b> No open dataset links an EV’s own telemetry to an actual fire on that vehicle. Telemetry and fire records exist only in separate datasets.</div>
+  <div id="cats"></div>
+</main>
+<footer>
+  <span class="ns">n/s</span> = not stated by the source, left blank on purpose rather than guessed. Values checked against each dataset’s page or paper, November 2026.
+  EV field data is placed where it was collected when the source says so; otherwise, and for lab data, at the publishing institution.<br>
+  Source list, download script and full details: <a href="https://github.com/soyounson/open-battery-data" target="_blank" rel="noopener">github.com/soyounson/open-battery-data</a>
+</footer>
+
+<aside class="panel" id="panel" aria-live="polite">
+  <div class="panel-head">
+    <div>
+      <div class="eyebrow" id="pEyebrow"></div>
+      <h2 id="pTitle"></h2>
+      <div class="basis" id="pBasis"></div>
+    </div>
+    <button class="close" id="closeBtn" type="button" aria-label="Close">
+      <svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l10 10M11 1 1 11"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="pBody"></div>
+</aside>
+
+<script src="assets/globe.gl.min.js"></script>
+<script src="assets/datasets.js"></script>
+<script src="assets/land-dots.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const ICONS = {
+    car:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3v-5l2.2-5.1A2 2 0 0 1 7 5.7h10a2 2 0 0 1 1.8 1.2L21 12v5h-2"/><path d="M3 12h18"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5"/></svg>',
+    flame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-2.8 7-6.8 0-3.6-2.4-6-4-8.2-.6 2-1.8 3.2-3 3.6.4-3-1-6.2-3.6-8.6C8.6 5.6 5 9 5 15.2 5 19.2 8 22 12 22Z"/><path d="M12 22c-1.7 0-3-1.3-3-3.1 0-1.8 1.6-3 3-4.9 1.4 1.9 3 3.1 3 4.9 0 1.8-1.3 3.1-3 3.1Z"/></svg>',
+    flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.4-2.6L14 9.2V3"/><path d="M7.2 15h9.6"/></svg>',
+    bolt:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>'
+  };
+  const CATS = {
+    ev_field: { label: "EV field",  long: "EV field data",       color: "var(--ev)",   icon: "car"   },
+    ev_fire:  { label: "EV fire",   long: "EV fire incidents",   color: "var(--fire)", icon: "flame" },
+    lab_cell: { label: "Lab cell",  long: "Lab cell data",       color: "var(--lab)",  icon: "flask" },
+    ess_fire: { label: "ESS",       long: "ESS fire incidents",  color: "var(--ess)",  icon: "bolt"  }
+  };
+  const ORDER = ["ev_field", "lab_cell", "ev_fire", "ess_fire"];
+  const FLAG = { Korea: "🇰🇷", USA: "🇺🇸", China: "🇨🇳", Germany: "🇩🇪", Australia: "🇦🇺" };
+  const DESC = {
+    ev_field: "Battery signals recorded in real vehicles.",
+    lab_cell: "Single cells tested on a bench: cycled to end of life, or abused until thermal runaway. Not from vehicles.",
+    ev_fire: "Real-world EV fire records, one row per incident. No battery signals.",
+    ess_fire: "Failures of stationary energy storage systems. Not EV, but the closest open record of large-pack fires."
+  };
+
+  const data = window.DATASETS || [];
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const val = s => (!s || /^n\/s/.test(s)) ? `<span class="ns">${esc(s || "n/s")}</span>` : esc(s);
+
+  let focusKeyImpl = null;
+  function focusKey(key) {
+    if (focusKeyImpl) return focusKeyImpl(key);
+    const d = data.find(x => x.key === key);
+    if (d) openSite({ site: d.site, country: d.country, basis: d.location_basis, items: [d] });
+  }
+
+  // ---------- group datasets by site ----------
+  const sites = [];
+  const bySite = {};
+  const unknown = [];
+  data.forEach(d => {
+    if (d.lat === "" || d.lng === "") { unknown.push(d); return; }
+    const k = d.site;
+    if (!bySite[k]) { bySite[k] = { site: d.site, basis: d.location_basis, country: d.country, lat: +d.lat, lng: +d.lng, items: [] }; sites.push(bySite[k]); }
+    bySite[k].items.push(d);
+  });
+  sites.forEach(s => { s.cat = s.items[0].category; });
+  // Spread markers whose sites are within ~2.5° of an earlier one
+  const SPREAD = [0, 44, -44, 88, -88];
+  sites.forEach((s, i) => {
+    const k = sites.slice(0, i).filter(o => Math.abs(o.lat - s.lat) < 2.5 && Math.abs(o.lng - s.lng) < 2.5).length;
+    s.dx = SPREAD[k % SPREAD.length];
+  });
+
+  // ---------- header + filters ----------
+  const counts = ORDER.map(c => data.filter(d => d.category === c).length);
+  document.getElementById("sub").textContent =
+    `${data.length} open datasets · ` + ORDER.map((c, i) => `${counts[i]} ${CATS[c].label}`).join(" · ");
+
+  let filter = "all";
+  const filters = document.getElementById("filters");
+  const chips = [{ key: "all", label: "All", n: data.length }].concat(ORDER.map((c, i) => ({ key: c, label: CATS[c].label, n: counts[i], color: CATS[c].color })));
+  filters.innerHTML = chips.map(c =>
+    `<button class="chip${c.key === "all" ? " on" : ""}" data-k="${c.key}" type="button">` +
+    (c.color ? `<span class="dot" style="background:${c.color}"></span>` : "") +
+    `${c.label} <span class="n">${c.n}</span></button>`).join("");
+  filters.addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    filter = b.dataset.k;
+    filters.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === b));
+    applyFilter();
+  });
+
+  // ---------- panel ----------
+  const panel = document.getElementById("panel");
+  const pEyebrow = document.getElementById("pEyebrow");
+  const pTitle = document.getElementById("pTitle");
+  const pBasis = document.getElementById("pBasis");
+  const pBody = document.getElementById("pBody");
+
+  function card(d) {
+    const c = CATS[d.category];
+    const access = (d.access || "").split(" ")[0];
+    return `<article class="card" style="--c:${c.color}">
+      <div class="card-top">
+        <div class="card-icon">${ICONS[c.icon]}</div>
+        <div><h3>${esc(d.name)}</h3><div class="type">${esc(d.type)}</div></div>
+      </div>
+      <div class="tags">
+        <span class="tag">${esc(d.chemistry && !/^n\/s/.test(d.chemistry) ? d.chemistry : "Chemistry n/s")}</span>
+        <span class="tag">${esc(d.setting)}</span>
+        <span class="tag access-${esc(access)}">${esc(d.access)}</span>
+        <span class="tag">${FLAG[d.country] || "❔"} ${esc(d.country)}</span>
+      </div>
+      <dl>
+        <dt>Application</dt><dd>${val(d.application)}</dd>
+        <dt>Amount</dt><dd>${val(d.amount)}</dd>
+        <dt>Duration</dt><dd>${val(d.duration)}</dd>
+        ${d.max_mileage && d.max_mileage !== "—" ? `<dt>Mileage</dt><dd>${val(d.max_mileage)}</dd>` : ""}
+        <dt>Signals</dt><dd>${val(d.signals)}</dd>
+        <dt>Acquisition</dt><dd>${val(d.acquisition)}</dd>
+        <dt>Interval</dt><dd>${val(d.frequency)}</dd>
+        <dt>Label</dt><dd>${val(d.label)}</dd>
+        <dt>Size</dt><dd>${val(d.size)}</dd>
+        <dt>License</dt><dd>${val(d.license)}</dd>
+        <dt>Script</dt><dd>${d.auto_download === "yes" ? `<code>python download.py ${esc(d.key)}</code>` : "Manual download (see source)"}</dd>
+      </dl>
+      <a class="src" href="${esc(d.source_url)}" target="_blank" rel="noopener">${esc(d.source_name)} ↗</a>
+    </article>`;
+  }
+
+  function openSite(s) {
+    pEyebrow.textContent = s.country;
+    pTitle.textContent = s.site;
+    pBasis.textContent = `${s.items.length} dataset${s.items.length > 1 ? "s" : ""} · location = ${s.basis.toLowerCase()}`;
+    pBody.innerHTML = s.items.map(card).join("");
+    pBody.scrollTop = 0;
+    panel.classList.add("open");
+    markActive(s);
+  }
+
+  function openList() {
+    pEyebrow.textContent = "Catalogue";
+    pTitle.textContent = "All datasets";
+    pBasis.textContent = `${data.length} datasets, grouped by data type`;
+    pBody.innerHTML = ORDER.map(c => {
+      const items = data.filter(d => d.category === c);
+      return `<div class="group-title"><span class="dot" style="background:${CATS[c].color}"></span>${CATS[c].long} · ${items.length}</div>` + items.map(card).join("");
+    }).join("");
+    pBody.scrollTop = 0;
+    panel.classList.add("open");
+    markActive(null);
+  }
+
+  function closePanel() { panel.classList.remove("open"); markActive(null); }
+  document.getElementById("closeBtn").addEventListener("click", closePanel);
+  document.getElementById("listBtn").addEventListener("click", openList);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closePanel(); });
+
+  const ub = document.getElementById("unknownBtn");
+  if (unknown.length) {
+    ub.hidden = false;
+    ub.textContent = `Location not stated · ${unknown.length}`;
+    ub.addEventListener("click", () => openSite({ site: "Location not stated", country: "Unknown", basis: "Unknown", items: unknown }));
+  }
+
+  // ---------- catalogue tables ----------
+  const country = d => FLAG[d.country] ? `${FLAG[d.country]} ${esc(d.country)}` : '<span class="ns">❔ n/s</span>';
+  const pill = d => `<span class="pill access-${esc((d.access || "").split(" ")[0])}">${esc(d.access)}</span>`;
+  const sigChips = s => (!s || /^n\/s/.test(s)) ? val(s) : s.split(" · ").map(x => `<code>${esc(x)}</code>`).join("");
+  document.getElementById("legend").innerHTML =
+    '<span><b>Access</b> &nbsp;<span class="pill access-Open">Open</span> direct download &nbsp;<span class="pill access-Login">Login</span> free account or subscription &nbsp;<span class="pill access-Request">Request</span> not downloadable</span>' +
+    '<span><b>Signals</b> &nbsp;V voltage · I current · T temperature · SOC state of charge · SOH state of health · R internal resistance</span>';
+  document.getElementById("cats").innerHTML = ORDER.map(c => {
+    const items = data.filter(d => d.category === c);
+    const sig = c === "ev_field" || c === "lab_cell";
+    const head = sig
+      ? "<th>Dataset</th><th>Access</th><th>Country</th><th>Signals</th><th>Acquisition · interval</th><th>Chemistry</th><th>Scale</th>"
+      : "<th>Dataset</th><th>Access</th><th>Country</th><th>What you get</th><th>Records from</th><th>Scale</th>";
+    const rowsHtml = items.map(d => `<tr data-key="${esc(d.key)}">
+        <td class="name">${esc(d.name)}<small>${esc(d.type)}</small></td>
+        <td>${pill(d)}</td>
+        <td style="white-space:nowrap">${country(d)}</td>
+        <td class="sig">${sigChips(d.signals)}</td>
+        <td class="acq">${val(d.acquisition)}${sig ? `<b>${val(d.frequency)}</b>` : ""}</td>
+        ${sig ? `<td>${val(d.chemistry)}</td>` : ""}
+        <td>${val(d.amount)}</td></tr>`).join("");
+    return `<section class="cat" style="--c:${CATS[c].color}">
+      <div class="cat-head"><h3><span class="ic">${ICONS[CATS[c].icon]}</span>${CATS[c].long}</h3><span class="count">${items.length}</span></div>
+      <p>${DESC[c]}</p>
+      <div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${rowsHtml}</tbody></table></div>
+    </section>`;
+  }).join("");
+  document.getElementById("cats").addEventListener("click", e => {
+    const tr = e.target.closest("tr[data-key]"); if (!tr) return;
+    focusKey(tr.dataset.key);
+  });
+
+  // ---------- markers ----------
+  const els = new Map();
+  function makeMarker(s) {
+    const c = CATS[s.cat];
+    const wrap = document.createElement("div");
+    wrap.className = "mwrap";
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "marker";
+    if (s.dx) el.style.setProperty("--dx", s.dx + "px");
+    wrap.appendChild(el);
+    el.style.setProperty("--c", c.color);
+    el.setAttribute("aria-label", `${s.site}: ${s.items.length} dataset(s)`);
+    el.innerHTML = ICONS[c.icon] + (s.items.length > 1 ? `<span class="badge">${s.items.length}</span>` : "");
+    el.addEventListener("click", ev => { ev.stopPropagation(); openSite(s); stopSpin(); });
+    els.set(s, el);
+    return wrap;
+  }
+  function markActive(s) { els.forEach((el, k) => el.classList.toggle("active", k === s)); }
+  function applyFilter() {
+    els.forEach((el, s) => {
+      const show = filter === "all" || s.items.some(d => d.category === filter);
+      el.parentElement.classList.toggle("dim", !show);
+    });
+  }
+
+  // ---------- globe ----------
+  const host = document.getElementById("globe");
+  if (typeof Globe !== "function") {
+    host.innerHTML = '<p style="padding:140px 32px;color:#8e8e93">The map library could not load. Use “All datasets”.</p>';
+    return;
+  }
+  const globe = Globe()(host)
+    .backgroundColor("rgba(0,0,0,0)")
+    .showAtmosphere(true)
+    .atmosphereColor("#9fb7ff")
+    .atmosphereAltitude(0.16)
+    .pointsData(window.LAND_DOTS || [])
+    .pointLat(p => p[1])
+    .pointLng(p => p[0])
+    .pointAltitude(0.002)
+    .pointRadius(0.32)
+    .pointResolution(6)
+    .pointColor(() => "rgba(255,255,255,0.5)")
+    .pointsMerge(true)
+    .htmlElementsData(sites)
+    .htmlLat(s => s.lat)
+    .htmlLng(s => s.lng)
+    .htmlAltitude(0.015)
+    .htmlElement(makeMarker)
+    .htmlElementVisibilityModifier((el, visible) => { el.style.visibility = visible ? "visible" : "hidden"; });
+
+  // Dark, matte sphere
+  const mat = globe.globeMaterial();
+  mat.color && mat.color.set("#0b0b0d");
+  if (mat.emissive) mat.emissive.set("#050507");
+  mat.shininess = 0;
+
+  globe.pointOfView({ lat: 32, lng: 112, altitude: 2.4 }, 0);
+  const ctr = globe.controls();
+  ctr.autoRotate = true;
+  ctr.autoRotateSpeed = 0.35;
+  ctr.enableDamping = true;
+  ctr.minDistance = 140;
+  ctr.maxDistance = 700;
+  function stopSpin() { ctr.autoRotate = false; }
+  host.addEventListener("pointerdown", stopSpin, { passive: true });
+  host.addEventListener("wheel", stopSpin, { passive: true });
+
+  ctr.enableZoom = false;   // page scrolls; use the +/− buttons
+  globe.renderer().domElement.style.touchAction = "pan-y";
+  const zoomBy = f => { const p = globe.pointOfView(); globe.pointOfView({ altitude: Math.min(4.5, Math.max(0.5, p.altitude * f)) }, 400); stopSpin(); };
+  document.getElementById("zin").addEventListener("click", () => zoomBy(0.7));
+  document.getElementById("zout").addEventListener("click", () => zoomBy(1.4));
+
+  function resize() { globe.width(host.clientWidth).height(host.clientHeight); }
+  window.addEventListener("resize", resize);
+  resize();
+
+  // Deep link: index.html#evbattery opens that dataset's site
+  focusKeyImpl = key => {
+    const s = sites.find(x => x.items.some(d => d.key === key));
+    if (s) { openSite(s); globe.pointOfView({ lat: s.lat, lng: s.lng, altitude: 1.6 }, 1200); stopSpin(); }
+    else if (unknown.some(d => d.key === key)) ub.click();
+  };
+  const key = decodeURIComponent(location.hash.slice(1));
+  if (key && key !== "catalogue") focusKey(key);
+})();
+</script>
+</body>
+</html>
