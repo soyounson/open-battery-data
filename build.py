@@ -25,7 +25,7 @@ CATEGORIES = [
 SIGNAL_CATS = {"ev_field", "lab_cell"}
 
 ACCESS_ICON = {"Open": "🟢 Open", "Login": "🟡 Login", "Request": "🔴 Request", "View only": "🔴 View only"}
-FLAG = {"Korea": "🇰🇷", "USA": "🇺🇸", "China": "🇨🇳", "Germany": "🇩🇪", "Australia": "🇦🇺"}
+FLAG = {"Korea": "🇰🇷", "USA": "🇺🇸", "China": "🇨🇳", "Germany": "🇩🇪", "Australia": "🇦🇺", "France": "🇫🇷"}
 
 
 def load():

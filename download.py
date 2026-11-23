@@ -119,6 +119,32 @@ DATASETS = {
         "region": "USA",
         "manual": "Download from https://www.sandia.gov/ess/tools-resources/rd-data-repository",
     },
+    "kit_nmc": {
+        "name": "KIT Comprehensive Battery Aging Dataset (228 NMC cells)",
+        "region": "Germany",
+        "manual": "Download the archive from RADAR4KIT: https://doi.org/10.35097/1969 "
+                  "(log data: https://doi.org/10.35097/kww7jv8ajuvchcah)",
+    },
+    "stanford_m50t": {
+        "name": "Stanford EV Driving-Profile Aging (LG M50T NMC)",
+        "region": "USA",
+        "manual": "Follow the data link in the article: https://doi.org/10.1016/j.dib.2022.107995",
+    },
+    "attia": {
+        "name": "MIT / Stanford / TRI Fast-Charging Optimization (Attia 2020)",
+        "region": "USA",
+        "manual": "Download from the web app: https://data.matr.io/1/",
+    },
+    "lyon_lfp": {
+        "name": "Lyon EV and Second-Life Aging (A123 LFP)",
+        "region": "France",
+        "manual": "Download from Recherche Data Gouv: https://doi.org/10.57745/OLBXKT",
+    },
+    "hust_lfp": {
+        "name": "HUST Discharge-Protocol Dataset (77 LFP cells)",
+        "region": "China",
+        "manual": "Click 'Download All' on Mendeley Data: https://data.mendeley.com/datasets/nsc7hnsg4s",
+    },
     "epri_bess": {
         "name": "EPRI BESS Failure Incident Database",
         "region": "USA",

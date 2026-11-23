@@ -1,6 +1,6 @@
 # Open Battery Data
 
-**15 open battery datasets** for degradation (SOH / capacity fade), thermal runaway and fire risk, with how to get each one.
+**20 open battery datasets** for degradation (SOH / capacity fade), thermal runaway and fire risk, with how to get each one.
 This repository only collects sources and download tools. It contains no analysis or models.
 
 <p align="center">
@@ -10,7 +10,7 @@ This repository only collects sources and download tools. It contains no analysi
 
 | 🚗 EV field | 🔬 Lab cell | 🔥 EV fire | ⚡ ESS fire |
 |:---:|:---:|:---:|:---:|
-| **5** | **7** | **2** | **1** |
+| **5** | **12** | **2** | **1** |
 
 **Access** 🟢 Open: direct download · 🟡 Login: free account or subscription · 🔴 Request / View only: not downloadable
 
@@ -198,6 +198,11 @@ Single cells tested on a bench: cycled to end of life, or abused until thermal r
 | **[Sandia Chemistry Comparison (Preger et al., 2020)](#sandia)** [🌏](https://soyounson.github.io/open-battery-data/#sandia) | 🟢 Open | 🇺🇸 USA | V · I · T · Capacity | Lab cycler<br>**n/s** | **🐢 Slow**<br>0.5C for all cells (only discharge rate varies) | LFP · NCA · NCM | 61 cells |
 | **[NREL Battery Failure Databank](#nrel_failure)** [🌏](https://soyounson.github.io/open-battery-data/#nrel_failure) | 🟢 Open | 🇺🇸 USA | Total heat · Heat split (body / vents) · Mass ejected · X-ray video | Fractional thermal runaway calorimeter + high-speed X-ray | **—** | n/s (various commercial cells) | ~300 tests |
 | **[Sandia Cell ARC Calorimetry Data](#sandia_arc)** [🌏](https://soyounson.github.io/open-battery-data/#sandia_arc) | 🟢 Open | 🇺🇸 USA | T · Self-heating rate | Accelerating rate calorimeter (ARC)<br>**n/s** | **—** | n/s | n/s |
+| **[KIT Comprehensive Battery Aging Dataset (Luh & Blank)](#kit_nmc)** [🌏](https://soyounson.github.io/open-battery-data/#kit_nmc) | 🟢 Open | 🇩🇪 Germany | Capacity · Impedance (EIS) · Pulse resistance · Raw logs | Lab cycler; 0–40 °C, 3 SOC windows<br>**2 s (raw logs)** | **🔀 Mixed**<br>CC-CV at 1/3C, 1C and 5/3C (charge rate is a study variable) | NCM (NMC/C+SiO) | 228 cells |
+| **[Stanford EV Driving-Profile Aging (Pozzato et al., 2022)](#stanford_m50t)** [🌏](https://soyounson.github.io/open-battery-data/#stanford_m50t) | 🟢 Open | 🇺🇸 USA | V · I · Capacity · Diagnostic tests incl. EIS | Lab cycler<br>**n/s** | **🔀 Mixed**<br>CC-CV from C/4 to 3C | NCM | 10 cells |
+| **[MIT / Stanford / TRI Fast-Charging Optimization (Attia et al., 2020)](#attia)** [🌏](https://soyounson.github.io/open-battery-data/#attia) | 🟢 Open | 🇺🇸 USA | V · I · Capacity (internal resistance not provided) | Lab cycler<br>**n/s** | **🚀 Fast**<br>Six-step, 10-minute fast-charging protocols, 3.6C–5.6C | LFP | 40 cells |
+| **[Lyon EV and Second-Life Aging (A123 LFP)](#lyon_lfp)** [🌏](https://soyounson.github.io/open-battery-data/#lyon_lfp) | 🟢 Open | 🇫🇷 France | V · I · Capacity · Energy · Pseudo-OCV · EIS | Lab cycler<br>**n/s** | **🔀 Mixed**<br>CC-CV at C/3 (reference); 2C in some cases | LFP | 20 cells, 7 test cases |
+| **[HUST Discharge-Protocol Dataset (Ma, Yuan et al., 2022)](#hust_lfp)** [🌏](https://soyounson.github.io/open-battery-data/#hust_lfp) | 🟢 Open | 🇨🇳 China | V · I · Capacity | Lab cycler<br>**n/s** | **🚀 Fast**<br>Identical fast-charging protocol for all cells (C-rate n/s); discharge varies | LFP | 77 cells (77 discharge protocols) |
 
 <a name="nasa_pcoe"></a>
 <details>
@@ -387,6 +392,151 @@ Single cells tested on a bench: cycled to end of life, or abused until thermal r
 | Country | 🇺🇸 USA |
 | Location on map | Sandia National Laboratories, New Mexico (institution) |
 | Source | [Sandia R&D Data Repository](https://www.sandia.gov/ess/tools-resources/rd-data-repository) |
+| Download | Manual (see source) |
+
+</details>
+
+<a name="kit_nmc"></a>
+<details>
+<summary><b>KIT Comprehensive Battery Aging Dataset (Luh & Blank)</b> · 🟢 Open · Degradation (calendar, cycle, driving cycles)</summary>
+
+| | |
+|---|---|
+| Access | 🟢 Open |
+| License | CC BY 4.0 |
+| Type | Degradation (calendar, cycle, driving cycles) |
+| Application | Cell (LG INR18650HG2, 3.0 Ah) |
+| Chemistry | NCM (NMC/C+SiO) |
+| Setting | Lab |
+| Amount | 228 cells |
+| Duration | ~600 days |
+| Signals | Capacity · Impedance (EIS) · Pulse resistance · Raw logs |
+| Acquisition | Lab cycler; 0–40 °C, 3 SOC windows |
+| Interval | 2 s (raw logs) |
+| Charging | 🔀 Mixed |
+| Charge rate | CC-CV at 1/3C, 1C and 5/3C (charge rate is a study variable) |
+| Label | Capacity and impedance fade per check-up |
+| Size | 333 MB (result data) + separate log data |
+| Country | 🇩🇪 Germany |
+| Location on map | KIT, Eggenstein-Leopoldshafen, Germany (institution) |
+| DOI | 10.35097/1969 (results) · 10.35097/kww7jv8ajuvchcah (logs) |
+| Source | [RADAR4KIT](https://doi.org/10.35097/1969) |
+| Download | Manual (see source) |
+
+</details>
+
+<a name="stanford_m50t"></a>
+<details>
+<summary><b>Stanford EV Driving-Profile Aging (Pozzato et al., 2022)</b> · 🟢 Open · Degradation</summary>
+
+| | |
+|---|---|
+| Access | 🟢 Open |
+| License | See article |
+| Type | Degradation |
+| Application | Cell (LG INR21700-M50T, graphite/Si anode) |
+| Chemistry | NCM |
+| Setting | Lab (UDDS driving profile, 23 °C) |
+| Amount | 10 cells |
+| Duration | 23 months |
+| Signals | V · I · Capacity · Diagnostic tests incl. EIS |
+| Acquisition | Lab cycler |
+| Interval | n/s |
+| Charging | 🔀 Mixed |
+| Charge rate | CC-CV from C/4 to 3C |
+| Label | Capacity and impedance from periodic diagnostic tests |
+| Size | n/s |
+| Country | 🇺🇸 USA |
+| Location on map | Stanford University, California (institution) |
+| DOI | 10.1016/j.dib.2022.107995 |
+| Source | [Data in Brief (dataset linked from article)](https://doi.org/10.1016/j.dib.2022.107995) |
+| Download | Manual (see source) |
+
+</details>
+
+<a name="attia"></a>
+<details>
+<summary><b>MIT / Stanford / TRI Fast-Charging Optimization (Attia et al., 2020)</b> · 🟢 Open · Degradation</summary>
+
+| | |
+|---|---|
+| Access | 🟢 Open |
+| License | See site |
+| Type | Degradation |
+| Application | Cell (A123 APR18650M1A) |
+| Chemistry | LFP |
+| Setting | Lab |
+| Amount | 40 cells |
+| Duration | n/s |
+| Signals | V · I · Capacity (internal resistance not provided) |
+| Acquisition | Lab cycler |
+| Interval | n/s |
+| Charging | 🚀 Fast |
+| Charge rate | Six-step, 10-minute fast-charging protocols, 3.6C–5.6C |
+| Label | Cycle life |
+| Size | n/s |
+| Country | 🇺🇸 USA |
+| Location on map | Stanford University, California (institution) |
+| DOI | 10.1038/s41586-020-1994-5 |
+| Source | [data.matr.io](https://data.matr.io/1/) |
+| Download | Manual (see source) |
+
+</details>
+
+<a name="lyon_lfp"></a>
+<details>
+<summary><b>Lyon EV and Second-Life Aging (A123 LFP)</b> · 🟢 Open · Degradation (first and second life)</summary>
+
+| | |
+|---|---|
+| Access | 🟢 Open |
+| License | n/s (article CC BY 4.0) |
+| Type | Degradation (first and second life) |
+| Application | Cell (A123 18650, 1.1 Ah) |
+| Chemistry | LFP |
+| Setting | Lab (WLTP-based EV profile, 50 °C) |
+| Amount | 20 cells, 7 test cases |
+| Duration | ~24 months, up to 3,200 cycles |
+| Signals | V · I · Capacity · Energy · Pseudo-OCV · EIS |
+| Acquisition | Lab cycler |
+| Interval | n/s |
+| Charging | 🔀 Mixed |
+| Charge rate | CC-CV at C/3 (reference); 2C in some cases |
+| Label | SOH down to ~30–50 % |
+| Size | n/s |
+| Country | 🇫🇷 France |
+| Location on map | Université Claude Bernard Lyon 1, Villeurbanne, France (institution) |
+| DOI | 10.57745/OLBXKT |
+| Source | [Recherche Data Gouv](https://doi.org/10.57745/OLBXKT) |
+| Download | Manual (see source) |
+
+</details>
+
+<a name="hust_lfp"></a>
+<details>
+<summary><b>HUST Discharge-Protocol Dataset (Ma, Yuan et al., 2022)</b> · 🟢 Open · Degradation</summary>
+
+| | |
+|---|---|
+| Access | 🟢 Open |
+| License | CC BY 4.0 |
+| Type | Degradation |
+| Application | Cell (A123 APR18650M1A, 1.1 Ah) |
+| Chemistry | LFP |
+| Setting | Lab (30 °C) |
+| Amount | 77 cells (77 discharge protocols) |
+| Duration | n/s |
+| Signals | V · I · Capacity |
+| Acquisition | Lab cycler |
+| Interval | n/s |
+| Charging | 🚀 Fast |
+| Charge rate | Identical fast-charging protocol for all cells (C-rate n/s); discharge varies |
+| Label | Cycle life |
+| Size | n/s |
+| Country | 🇨🇳 China |
+| Location on map | Huazhong University of Science and Technology, Wuhan (institution) |
+| DOI | 10.17632/nsc7hnsg4s |
+| Source | [Mendeley Data](https://data.mendeley.com/datasets/nsc7hnsg4s) |
 | Download | Manual (see source) |
 
 </details>
