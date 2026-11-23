@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this catalogue, please cite it as below, and cite each original dataset you use."
+title: "Open Battery Data: a catalogue and map of open lithium-ion battery datasets"
+type: dataset
+authors:
+  - family-names: Son
+    given-names: Soyoun
+repository-code: "https://github.com/soyounson/open-battery-data"
+url: "https://soyounson.github.io/open-battery-data/"
+abstract: >-
+  A curated catalogue of open lithium-ion battery datasets for EV and battery
+  research: EV field telemetry, lab cell degradation, thermal-runaway tests and
+  EV / ESS fire records, with chemistry, signals, charging C-rate, access and
+  download links, shown on an interactive globe.
+keywords:
+  - battery
+  - lithium-ion
+  - electric vehicle
+  - battery degradation
+  - state of health
+  - LFP
+  - NMC
+  - thermal runaway
+  - open data
+date-released: "2026-11-23"
