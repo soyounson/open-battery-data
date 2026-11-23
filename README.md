@@ -14,6 +14,8 @@ This repository only collects sources and download tools. It contains no analysi
 
 **Access** 🟢 Open: direct download · 🟡 Login: free account or subscription · 🔴 Request / View only: not downloadable
 
+**Charging** 🐢 Slow: AC charging or ≤ 1C · 🚀 Fast: DC fast charging or > 1C · 🔀 Mixed: both in one dataset. No dataset labels charges as fast or slow itself; this is our classification from the stated currents.
+
 **Signals** `V` voltage · `I` current · `T` temperature · `SOC` state of charge · `SOH` state of health · `R` internal resistance
 
 > **Key gap:** no open dataset links an EV's own telemetry to an actual fire on that vehicle. Telemetry and fire records exist only in separate datasets.
@@ -25,13 +27,13 @@ This repository only collects sources and download tools. It contains no analysi
 
 Battery signals recorded in real vehicles.
 
-| Dataset | Access | Country | Signals | Acquisition · interval | Chemistry | Scale |
-|---|---|---|---|---|---|---|
-| **[Field EV Fleet BMS Telemetry](#korea_ev_fleet)** [🌏](https://soyounson.github.io/open-battery-data/#korea_ev_fleet) | 🟡 Login | 🇰🇷 Korea | V · I · T · SOC · SOH (vendor) · Speed · Motor rpm · Odometer · R (derived) | BMS telemetry (device n/s)<br>**1 s** | NCM | 21 vehicles |
-| **[EVBattery](#evbattery)** [🌏](https://soyounson.github.io/open-battery-data/#evbattery) | 🟢 Open | 🇨🇳 China | Cell V (avg / max / min) · I · Cell T (max / min) · SOC · Mileage · Capacity label · Fault label | EV charging stations (charging only)<br>**n/s (128 points per snippet)** | n/s | 464 vehicles · ~1.28 M charging snippets |
-| **[RVD: 300 mass-produced NEVs](#rvd)** [🌏](https://soyounson.github.io/open-battery-data/#rvd) | 🟡 Login | ❔ n/s | V · I · SOC · SOH · Speed · Acceleration · Mileage | n/s<br>**n/s** | n/s | 300 vehicles · 104,621 cycles |
-| **[Real EV dataset: Chengdu e-buses](#chengdu_bus)** [🌏](https://soyounson.github.io/open-battery-data/#chengdu_bus) | 🟢 Open | 🇨🇳 China | V · I · SOC · Surface T | CAN bus<br>**10 s** | n/s | 5 buses |
-| **[BEVs in Commercial Fleets](#rwth_fleet)** [🌏](https://soyounson.github.io/open-battery-data/#rwth_fleet) | 🟢 Open | 🇩🇪 Germany | V · I · Power · SOC · Speed · Odometer · Ambient T · Capacity tests | CAN data logger (Ipetronik Fleetlog); no data while charging<br>**1 s (capacity tests 0.1 s)** | n/s | 9 vehicles |
+| Dataset | Access | Country | Signals | Acquisition · interval | Charging · C-rate | Chemistry | Scale |
+|---|---|---|---|---|---|---|---|
+| **[Field EV Fleet BMS Telemetry](#korea_ev_fleet)** [🌏](https://soyounson.github.io/open-battery-data/#korea_ev_fleet) | 🟡 Login | 🇰🇷 Korea | V · I · T · SOC · SOH (vendor) · Speed · Motor rpm · Odometer · R (derived) | BMS telemetry (device n/s)<br>**1 s** | **n/s** | NCM | 21 vehicles |
+| **[EVBattery](#evbattery)** [🌏](https://soyounson.github.io/open-battery-data/#evbattery) | 🟢 Open | 🇨🇳 China | Cell V (avg / max / min) · I · Cell T (max / min) · SOC · Mileage · Capacity label · Fault label | EV charging stations (charging only)<br>**n/s (128 points per snippet)** | **n/s**<br>n/s (charging-station records) | n/s | 464 vehicles · ~1.28 M charging snippets |
+| **[RVD: 300 mass-produced NEVs](#rvd)** [🌏](https://soyounson.github.io/open-battery-data/#rvd) | 🟡 Login | ❔ n/s | V · I · SOC · SOH · Speed · Acceleration · Mileage | n/s<br>**n/s** | **n/s** | n/s | 300 vehicles · 104,621 cycles |
+| **[Real EV dataset: Chengdu e-buses](#chengdu_bus)** [🌏](https://soyounson.github.io/open-battery-data/#chengdu_bus) | 🟢 Open | 🇨🇳 China | V · I · SOC · Surface T | CAN bus<br>**10 s** | **🚀 Fast**<br>Multi-step fast charging (C-rate n/s) | Likely LFP (inferred: Chinese e-buses mostly use LFP; not stated) | 5 buses |
+| **[BEVs in Commercial Fleets](#rwth_fleet)** [🌏](https://soyounson.github.io/open-battery-data/#rwth_fleet) | 🟢 Open | 🇩🇪 Germany | V · I · Power · SOC · Speed · Odometer · Ambient T · Capacity tests | CAN data logger (Ipetronik Fleetlog); no data while charging<br>**1 s (capacity tests 0.1 s)** | **🐢 Slow**<br>AC only: Smart 11 kW (≈0.6C), i-MiEV/iOn 3.2 kW (≈0.2C) | NCM: NMC111 (Smart, Li-Tec HEA50) · Mn-rich NMC (i-MiEV/iOn, GS Yuasa LEV50) | 9 vehicles |
 
 <a name="korea_ev_fleet"></a>
 <details>
@@ -51,6 +53,8 @@ Battery signals recorded in real vehicles.
 | Signals | V · I · T · SOC · SOH (vendor) · Speed · Motor rpm · Odometer · R (derived) |
 | Acquisition | BMS telemetry (device n/s) |
 | Interval | 1 s |
+| Charging | n/s |
+| Charge rate | n/s |
 | Label | Vendor SOH (when available); lab-measured resistance for 1 vehicle (AAM15) |
 | Size | 25.5 MB (zip, Parquet) |
 | Country | 🇰🇷 Korea |
@@ -79,6 +83,8 @@ Battery signals recorded in real vehicles.
 | Signals | Cell V (avg / max / min) · I · Cell T (max / min) · SOC · Mileage · Capacity label · Fault label |
 | Acquisition | EV charging stations (charging only) |
 | Interval | n/s (128 points per snippet) |
+| Charging | n/s |
+| Charge rate | n/s (charging-station records) |
 | Label | Capacity (~586 k snippets); abnormal-vehicle label (48 vehicles) |
 | Size | 1.41 GB (3 × tar.gz) |
 | Country | 🇨🇳 China |
@@ -107,6 +113,8 @@ Battery signals recorded in real vehicles.
 | Signals | V · I · SOC · SOH · Speed · Acceleration · Mileage |
 | Acquisition | n/s |
 | Interval | n/s |
+| Charging | n/s |
+| Charge rate | n/s |
 | Label | SOH per cycle |
 | Size | 182 MB (xlsx) |
 | Country | ❔ n/s |
@@ -127,7 +135,7 @@ Battery signals recorded in real vehicles.
 | License | CC BY 4.0 |
 | Type | Degradation |
 | Application | EV: commercial e-buses |
-| Chemistry | n/s |
+| Chemistry | Likely LFP (inferred: Chinese e-buses mostly use LFP; not stated) |
 | Setting | Field |
 | Amount | 5 buses |
 | Duration | n/s |
@@ -135,6 +143,8 @@ Battery signals recorded in real vehicles.
 | Signals | V · I · SOC · Surface T |
 | Acquisition | CAN bus |
 | Interval | 10 s |
+| Charging | 🚀 Fast |
+| Charge rate | Multi-step fast charging (C-rate n/s) |
 | Label | n/s |
 | Size | n/s |
 | Country | 🇨🇳 China |
@@ -154,8 +164,8 @@ Battery signals recorded in real vehicles.
 | Access | 🟢 Open |
 | License | CC BY 4.0 |
 | Type | Degradation |
-| Application | EV: geriatric-care fleet |
-| Chemistry | n/s |
+| Application | EV: geriatric-care fleet (6 Smart e.d., 3 Mitsubishi i-MiEV / Peugeot iOn) |
+| Chemistry | NCM: NMC111 (Smart, Li-Tec HEA50) · Mn-rich NMC (i-MiEV/iOn, GS Yuasa LEV50) |
 | Setting | Field |
 | Amount | 9 vehicles |
 | Duration | 2014 – 2016 |
@@ -163,6 +173,8 @@ Battery signals recorded in real vehicles.
 | Signals | V · I · Power · SOC · Speed · Odometer · Ambient T · Capacity tests |
 | Acquisition | CAN data logger (Ipetronik Fleetlog); no data while charging |
 | Interval | 1 s (capacity tests 0.1 s) |
+| Charging | 🐢 Slow |
+| Charge rate | AC only: Smart 11 kW (≈0.6C), i-MiEV/iOn 3.2 kW (≈0.2C) |
 | Label | Capacity from periodic dynamometer tests (3.1 – 13 % fade) |
 | Size | 82 MB (zip) |
 | Country | 🇩🇪 Germany |
@@ -177,15 +189,15 @@ Battery signals recorded in real vehicles.
 
 Single cells tested on a bench: cycled to end of life, or abused until thermal runaway. Not from vehicles.
 
-| Dataset | Access | Country | Signals | Acquisition · interval | Chemistry | Scale |
-|---|---|---|---|---|---|---|
-| **[NASA PCoE Battery Data Set](#nasa_pcoe)** [🌏](https://soyounson.github.io/open-battery-data/#nasa_pcoe) | 🟢 Open | 🇺🇸 USA | V · I · T · Capacity · Impedance (Re, Rct) | Lab testbed (load, power supply, EIS)<br>**~10 Hz** | n/s | 18650 cells (e.g. B0005; count n/s) |
-| **[NASA Randomized Battery Usage (7 sets)](#nasa_randomized)** [🌏](https://soyounson.github.io/open-battery-data/#nasa_randomized) | 🟢 Open | 🇺🇸 USA | V · I · T · Reference capacity | Lab testbed (random-walk load)<br>**n/s** | n/s | 4 cells per set |
-| **[CALCE Battery Data](#calce)** [🌏](https://soyounson.github.io/open-battery-data/#calce) | 🟢 Open | 🇺🇸 USA | V · I · Capacity · R | Lab cycler<br>**n/s** | LCO (CS2, CX2, PL, PLN) · LFP (A123, K2) | CS2 15 · CX2 12 · PL 16 · A123 3 · K2 2 · PLN storage test |
-| **[MIT / Stanford / TRI (Severson et al., 2019)](#severson)** [🌏](https://soyounson.github.io/open-battery-data/#severson) | 🟢 Open | 🇺🇸 USA | V · I · T (casing) · R · Capacity | Lab cycler<br>**n/s** | LFP | 124 cells |
-| **[Sandia Chemistry Comparison (Preger et al., 2020)](#sandia)** [🌏](https://soyounson.github.io/open-battery-data/#sandia) | 🟢 Open | 🇺🇸 USA | V · I · T · Capacity | Lab cycler<br>**n/s** | LFP · NCA · NCM | 61 cells |
-| **[NREL Battery Failure Databank](#nrel_failure)** [🌏](https://soyounson.github.io/open-battery-data/#nrel_failure) | 🟢 Open | 🇺🇸 USA | Total heat · Heat split (body / vents) · Mass ejected · X-ray video | Fractional thermal runaway calorimeter + high-speed X-ray | n/s (various commercial cells) | ~300 tests |
-| **[Sandia Cell ARC Calorimetry Data](#sandia_arc)** [🌏](https://soyounson.github.io/open-battery-data/#sandia_arc) | 🟢 Open | 🇺🇸 USA | T · Self-heating rate | Accelerating rate calorimeter (ARC)<br>**n/s** | n/s | n/s |
+| Dataset | Access | Country | Signals | Acquisition · interval | Charging · C-rate | Chemistry | Scale |
+|---|---|---|---|---|---|---|---|
+| **[NASA PCoE Battery Data Set](#nasa_pcoe)** [🌏](https://soyounson.github.io/open-battery-data/#nasa_pcoe) | 🟢 Open | 🇺🇸 USA | V · I · T · Capacity · Impedance (Re, Rct) | Lab testbed (load, power supply, EIS)<br>**~10 Hz** | **🐢 Slow**<br>CC-CV 1.5 A to 4.2 V (≈0.75C) | n/s | 18650 cells (e.g. B0005; count n/s) |
+| **[NASA Randomized Battery Usage (7 sets)](#nasa_randomized)** [🌏](https://soyounson.github.io/open-battery-data/#nasa_randomized) | 🟢 Open | 🇺🇸 USA | V · I · T · Reference capacity | Lab testbed (random-walk load)<br>**n/s** | **🔀 Mixed**<br>Random-walk currents up to 4.5 A (set 1); others CC-CV to 4.2 V | n/s | 4 cells per set |
+| **[CALCE Battery Data](#calce)** [🌏](https://soyounson.github.io/open-battery-data/#calce) | 🟢 Open | 🇺🇸 USA | V · I · Capacity · R | Lab cycler<br>**n/s** | **🐢 Slow**<br>CC-CV 0.5C to 4.2 V (CS2, CX2); others n/s | LCO (CS2, CX2, PL, PLN) · LFP (A123, K2) | CS2 15 · CX2 12 · PL 16 · A123 3 · K2 2 · PLN storage test |
+| **[MIT / Stanford / TRI (Severson et al., 2019)](#severson)** [🌏](https://soyounson.github.io/open-battery-data/#severson) | 🟢 Open | 🇺🇸 USA | V · I · T (casing) · R · Capacity | Lab cycler<br>**n/s** | **🚀 Fast**<br>Fast-charging protocols 3.6C–6C | LFP | 124 cells |
+| **[Sandia Chemistry Comparison (Preger et al., 2020)](#sandia)** [🌏](https://soyounson.github.io/open-battery-data/#sandia) | 🟢 Open | 🇺🇸 USA | V · I · T · Capacity | Lab cycler<br>**n/s** | **🐢 Slow**<br>0.5C for all cells (only discharge rate varies) | LFP · NCA · NCM | 61 cells |
+| **[NREL Battery Failure Databank](#nrel_failure)** [🌏](https://soyounson.github.io/open-battery-data/#nrel_failure) | 🟢 Open | 🇺🇸 USA | Total heat · Heat split (body / vents) · Mass ejected · X-ray video | Fractional thermal runaway calorimeter + high-speed X-ray | **—** | n/s (various commercial cells) | ~300 tests |
+| **[Sandia Cell ARC Calorimetry Data](#sandia_arc)** [🌏](https://soyounson.github.io/open-battery-data/#sandia_arc) | 🟢 Open | 🇺🇸 USA | T · Self-heating rate | Accelerating rate calorimeter (ARC)<br>**n/s** | **—** | n/s | n/s |
 
 <a name="nasa_pcoe"></a>
 <details>
@@ -204,6 +216,8 @@ Single cells tested on a bench: cycled to end of life, or abused until thermal r
 | Signals | V · I · T · Capacity · Impedance (Re, Rct) |
 | Acquisition | Lab testbed (load, power supply, EIS) |
 | Interval | ~10 Hz |
+| Charging | 🐢 Slow |
+| Charge rate | CC-CV 1.5 A to 4.2 V (≈0.75C) |
 | Label | Capacity per cycle; impedance (Re, Rct) |
 | Size | n/s |
 | Country | 🇺🇸 USA |
@@ -230,6 +244,8 @@ Single cells tested on a bench: cycled to end of life, or abused until thermal r
 | Signals | V · I · T · Reference capacity |
 | Acquisition | Lab testbed (random-walk load) |
 | Interval | n/s |
+| Charging | 🔀 Mixed |
+| Charge rate | Random-walk currents up to 4.5 A (set 1); others CC-CV to 4.2 V |
 | Label | Reference charge / discharge cycles (SOH benchmark) |
 | Size | n/s |
 | Country | 🇺🇸 USA |
@@ -256,6 +272,8 @@ Single cells tested on a bench: cycled to end of life, or abused until thermal r
 | Signals | V · I · Capacity · R |
 | Acquisition | Lab cycler |
 | Interval | n/s |
+| Charging | 🐢 Slow |
+| Charge rate | CC-CV 0.5C to 4.2 V (CS2, CX2); others n/s |
 | Label | Capacity, impedance |
 | Size | xlsx / txt in zips |
 | Country | 🇺🇸 USA |
@@ -282,6 +300,8 @@ Single cells tested on a bench: cycled to end of life, or abused until thermal r
 | Signals | V · I · T (casing) · R · Capacity |
 | Acquisition | Lab cycler |
 | Interval | n/s |
+| Charging | 🚀 Fast |
+| Charge rate | Fast-charging protocols 3.6C–6C |
 | Label | Cycle life, capacity per cycle |
 | Size | n/s |
 | Country | 🇺🇸 USA |
@@ -308,6 +328,8 @@ Single cells tested on a bench: cycled to end of life, or abused until thermal r
 | Signals | V · I · T · Capacity |
 | Acquisition | Lab cycler |
 | Interval | n/s |
+| Charging | 🐢 Slow |
+| Charge rate | 0.5C for all cells (only discharge rate varies) |
 | Label | Capacity to 80 % |
 | Size | n/s |
 | Country | 🇺🇸 USA |
@@ -478,7 +500,7 @@ python download.py --all                  # everything with a direct link (5 dat
 
 ## Notes
 
-- **Chemistry:** `LFP` lithium iron phosphate · `NCM` (= NMC) nickel cobalt manganese · `NCA` nickel cobalt aluminium · `LCO` lithium cobalt oxide · `Mixed` several, not separated. Don't infer chemistry from region or vehicle type when it's `n/s`.
+- **Chemistry:** `LFP` lithium iron phosphate · `NCM` (= NMC) nickel cobalt manganese · `NCA` nickel cobalt aluminium · `LCO` lithium cobalt oxide · `Mixed` several, not separated. Chemistry is taken from the dataset page or its paper; where neither states it, an inference is marked "inferred" with the reason, otherwise it stays `n/s`.
 - **Map location:** EV field data is placed where it was collected when the source says so; otherwise, and for lab data, at the publishing institution. Datasets with no stated location appear under "Location not stated".
 - **Licenses:** check each one before publishing results or using data commercially. Several datasets ask you to cite specific papers (CALCE asks for at least three).
 - NREL's battery pages now live at `nlr.gov`; the script uses that address.

@@ -49,15 +49,24 @@ def acq(r):
     return f"{cell(a)}<br>**{cell(f)}**"
 
 
+CHG_ICON = {"Slow": "🐢 Slow", "Fast": "🚀 Fast", "Mixed": "🔀 Mixed", "n/s": "n/s", "n/a": "—"}
+
+
+def chg(r):
+    label = CHG_ICON.get(r["charging"], r["charging"])
+    rate = r["charge_rate"]
+    return f"**{label}**" + (f"<br>{cell(rate)}" if rate and rate not in ("—", "n/s") else "")
+
+
 def overview_table(key, rows):
     if key in SIGNAL_CATS:
-        out = ["| Dataset | Access | Country | Signals | Acquisition · interval | Chemistry | Scale |",
-               "|---|---|---|---|---|---|---|"]
+        out = ["| Dataset | Access | Country | Signals | Acquisition · interval | Charging · C-rate | Chemistry | Scale |",
+               "|---|---|---|---|---|---|---|---|"]
         for r in rows:
             out.append(
                 f"| **[{cell(r['name'])}](#{r['key']})** [🌏]({PAGES}#{r['key']}) "
                 f"| {ACCESS_ICON.get(r['access'], r['access'])} | {country(r)} | {cell(r['signals'])} "
-                f"| {acq(r)} | {cell(r['chemistry'])} | {cell(r['amount'])} |")
+                f"| {acq(r)} | {chg(r)} | {cell(r['chemistry'])} | {cell(r['amount'])} |")
     else:
         out = ["| Dataset | Access | Country | What you get | Records from | Scale |",
                "|---|---|---|---|---|---|"]
@@ -75,7 +84,9 @@ def details(r):
         ("Type", r["type"]), ("Application", r["application"]), ("Chemistry", r["chemistry"]),
         ("Setting", r["setting"]), ("Amount", r["amount"]), ("Duration", r["duration"]),
         ("Max mileage", r["max_mileage"]), ("Signals", r["signals"]),
-        ("Acquisition", r["acquisition"]), ("Interval", r["frequency"]), ("Label", r["label"]),
+        ("Acquisition", r["acquisition"]), ("Interval", r["frequency"]),
+        ("Charging", CHG_ICON.get(r["charging"], r["charging"]) if r["charging"] != "n/a" else ""),
+        ("Charge rate", r["charge_rate"]), ("Label", r["label"]),
         ("Size", r["size"]), ("Country", country(r)),
         ("Location on map", f"{r['site']} ({r['location_basis'].lower()})"),
     ]
@@ -108,6 +119,8 @@ This repository only collects sources and download tools. It contains no analysi
 
 **Access** 🟢 Open: direct download · 🟡 Login: free account or subscription · 🔴 Request / View only: not downloadable
 
+**Charging** 🐢 Slow: AC charging or ≤ 1C · 🚀 Fast: DC fast charging or > 1C · 🔀 Mixed: both in one dataset. No dataset labels charges as fast or slow itself; this is our classification from the stated currents.
+
 **Signals** `V` voltage · `I` current · `T` temperature · `SOC` state of charge · `SOH` state of health · `R` internal resistance
 
 > **Key gap:** no open dataset links an EV's own telemetry to an actual fire on that vehicle. Telemetry and fire records exist only in separate datasets.
@@ -133,7 +146,7 @@ python download.py --all                  # everything with a direct link ({len(
 
 ## Notes
 
-- **Chemistry:** `LFP` lithium iron phosphate · `NCM` (= NMC) nickel cobalt manganese · `NCA` nickel cobalt aluminium · `LCO` lithium cobalt oxide · `Mixed` several, not separated. Don't infer chemistry from region or vehicle type when it's `n/s`.
+- **Chemistry:** `LFP` lithium iron phosphate · `NCM` (= NMC) nickel cobalt manganese · `NCA` nickel cobalt aluminium · `LCO` lithium cobalt oxide · `Mixed` several, not separated. Chemistry is taken from the dataset page or its paper; where neither states it, an inference is marked \"inferred\" with the reason, otherwise it stays `n/s`.
 - **Map location:** EV field data is placed where it was collected when the source says so; otherwise, and for lab data, at the publishing institution. Datasets with no stated location appear under "Location not stated".
 - **Licenses:** check each one before publishing results or using data commercially. Several datasets ask you to cite specific papers (CALCE asks for at least three).
 - NREL's battery pages now live at `nlr.gov`; the script uses that address.

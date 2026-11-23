@@ -115,7 +115,7 @@
   .cat-head .count { color: var(--muted); font-size: 15px; }
   .cat p { margin: 0 0 18px; color: var(--muted); font-size: 14.5px; }
   .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.025); -webkit-overflow-scrolling: touch; }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 980px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 1120px; }
   th { text-align: left; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 14px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: top; color: #d1d1d6; line-height: 1.45; }
   tbody tr:last-child td { border-bottom: 0; }
@@ -125,6 +125,11 @@
   td.name small { display: block; color: var(--muted); font-weight: 400; margin-top: 3px; font-size: 12.5px; }
   td.sig { min-width: 230px; }
   td.acq { min-width: 190px; }
+  td.chg { min-width: 170px; }
+  td.chg small { display: block; color: var(--muted); margin-top: 6px; font-size: 12.5px; line-height: 1.4; }
+  .pill.chg-Slow { background: rgba(62,106,225,.18); color: #8eaaff; }
+  .pill.chg-Fast { background: rgba(232,33,39,.16); color: #ff6961; }
+  .pill.chg-Mixed { background: rgba(255,159,10,.16); color: #ffb340; }
   td.acq b { display: block; color: var(--text); font-weight: 600; margin-top: 3px; }
   .pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
   .pill.access-Open { background: rgba(48,209,88,.16); color: #30d158; }
@@ -310,6 +315,7 @@
         <dt>Signals</dt><dd>${val(d.signals)}</dd>
         <dt>Acquisition</dt><dd>${val(d.acquisition)}</dd>
         <dt>Interval</dt><dd>${val(d.frequency)}</dd>
+        ${d.charging !== "n/a" ? `<dt>Charging</dt><dd>${CHG[d.charging] ? CHG[d.charging] : val(d.charging)}${d.charge_rate && !/^(—|n\/s)$/.test(d.charge_rate) ? " · " + esc(d.charge_rate) : ""}</dd>` : ""}
         <dt>Label</dt><dd>${val(d.label)}</dd>
         <dt>Size</dt><dd>${val(d.size)}</dd>
         <dt>License</dt><dd>${val(d.license)}</dd>
@@ -356,16 +362,19 @@
 
   // ---------- catalogue tables ----------
   const country = d => FLAG[d.country] ? `${FLAG[d.country]} ${esc(d.country)}` : '<span class="ns">❔ n/s</span>';
+  const CHG = { Slow: "🐢 Slow", Fast: "🚀 Fast", Mixed: "🔀 Mixed" };
+  const chgPill = d => CHG[d.charging] ? `<span class="pill chg-${esc(d.charging)}">${CHG[d.charging]}</span>` : '<span class="ns">n/s</span>';
   const pill = d => `<span class="pill access-${esc((d.access || "").split(" ")[0])}">${esc(d.access)}</span>`;
   const sigChips = s => (!s || /^n\/s/.test(s)) ? val(s) : s.split(" · ").map(x => `<code>${esc(x)}</code>`).join("");
   document.getElementById("legend").innerHTML =
     '<span><b>Access</b> &nbsp;<span class="pill access-Open">Open</span> direct download &nbsp;<span class="pill access-Login">Login</span> free account or subscription &nbsp;<span class="pill access-Request">Request</span> not downloadable</span>' +
+    '<span><b>Charging</b> &nbsp;🐢 Slow = AC or ≤ 1C · 🚀 Fast = DC fast or &gt; 1C · 🔀 Mixed = both (our classification from stated currents)</span>' +
     '<span><b>Signals</b> &nbsp;V voltage · I current · T temperature · SOC state of charge · SOH state of health · R internal resistance</span>';
   document.getElementById("cats").innerHTML = ORDER.map(c => {
     const items = data.filter(d => d.category === c);
     const sig = c === "ev_field" || c === "lab_cell";
     const head = sig
-      ? "<th>Dataset</th><th>Access</th><th>Country</th><th>Signals</th><th>Acquisition · interval</th><th>Chemistry</th><th>Scale</th>"
+      ? "<th>Dataset</th><th>Access</th><th>Country</th><th>Signals</th><th>Acquisition · interval</th><th>Charging · C-rate</th><th>Chemistry</th><th>Scale</th>"
       : "<th>Dataset</th><th>Access</th><th>Country</th><th>What you get</th><th>Records from</th><th>Scale</th>";
     const rowsHtml = items.map(d => `<tr data-key="${esc(d.key)}">
         <td class="name">${esc(d.name)}<small>${esc(d.type)}</small></td>
@@ -373,7 +382,7 @@
         <td style="white-space:nowrap">${country(d)}</td>
         <td class="sig">${sigChips(d.signals)}</td>
         <td class="acq">${val(d.acquisition)}${sig ? `<b>${val(d.frequency)}</b>` : ""}</td>
-        ${sig ? `<td>${val(d.chemistry)}</td>` : ""}
+        ${sig ? `<td class="chg">${chgPill(d)}${d.charge_rate && !/^(—|n\/s)$/.test(d.charge_rate) ? `<small>${esc(d.charge_rate)}</small>` : ""}</td><td>${val(d.chemistry)}</td>` : ""}
         <td>${val(d.amount)}</td></tr>`).join("");
     return `<section class="cat" style="--c:${CATS[c].color}">
       <div class="cat-head"><h3><span class="ic">${ICONS[CATS[c].icon]}</span>${CATS[c].long}</h3><span class="count">${items.length}</span></div>
