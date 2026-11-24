@@ -161,6 +161,10 @@ Know a missing dataset, or can you confirm an `n/s` value? Edit `datasets.csv`, 
 | `build.py` | Regenerates `README.md` and `assets/datasets.js` |
 | `index.html` | Interactive globe and tables (GitHub Pages) |
 | `download.py` | Downloads datasets that have direct links |
+
+## License
+
+Code is MIT and the catalog text is CC BY 4.0 (see [LICENSE](LICENSE)). Each dataset keeps its own license, shown in its entry above.
 """)
     return "\n\n".join(parts)
 
